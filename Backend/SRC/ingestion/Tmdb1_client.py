@@ -3,7 +3,7 @@ import dotenv
 import requests
 import json
 from pathlib import Path
-import pandas as pd
+import pandas as pd 
 
 dotenv.load_dotenv()
 
@@ -11,7 +11,7 @@ dotenv.load_dotenv()
 class TMDBClient:
     def __init__(self, api_key: str, base_url: str):
         self.api_key = api_key
-        self.base_url = base_url
+        self.base_url = base_url 
 
     def init_client(self, endpoint: str):
         url = f"{self.base_url}/{endpoint}"
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     # save JSON 
     if resp:
         with open("tmdb_response.json", "w") as f:
-            json.dump(resp, f, indent=4)
+            json.dump(resp, f, indent=4) 
 
     # CREATE DATAFRAME 
     if resp and "results" in resp:
@@ -57,8 +57,11 @@ if __name__ == "__main__":
 
         print("\n DATAFRAME CREATED\n")
         print(df.head())
+        print(df.info())
+        print(df.describe())
 
         df.to_csv("tmdb_response.csv", index=False)
+        
 
     else:
         print(" DataFrame not created (API issue)")
