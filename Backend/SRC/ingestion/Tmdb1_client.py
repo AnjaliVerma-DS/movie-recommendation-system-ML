@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import pandas as pd 
 
-dotenv.load_dotenv()
+dotenv.load_dotenv() 
 
 
 class TMDBClient:
@@ -16,23 +16,29 @@ class TMDBClient:
     def init_client(self, endpoint: str):
         url = f"{self.base_url}/{endpoint}"
 
-        try:
-            response = requests.get(
-                url=url,
-                params={
-                    "api_key": self.api_key,
-                    "page": 1
-                }
-            )
-
-            response.raise_for_status()
-            response_data=response.json()
-
-            return  response_data
+        all_movie=[]
+        for page in range(1,59):
+            print(f"fetching page {page}")
+            try:
+                response = requests.get(
+                    url=url,
+                    params={
+                         "api_key": self.api_key,
+                         "page": page
+                         }
+                         )
+                response.raise_for_status()
+                response_data=response.json()
+                
+                all_movie.extend(response_data['results'])
         
 
-        except Exception as e:
-            print(" got exception while running init_client:", e)
+            except Exception as e:
+                print(" got exception while running init_client:", e)
+                continue
+            print("Total movies collected:", len(all_movie))
+        return {"results": all_movie}
+
 
 if __name__ == "__main__":
 
@@ -47,8 +53,13 @@ if __name__ == "__main__":
 
     # save JSON 
     if resp:
-        with open("tmdb_response.json", "w") as f:
-            json.dump(resp, f, indent=4) 
+        data_dir = Path("../../data")
+        data_dir.mkdir(parents=True, exist_ok=True)
+        with open(data_dir / "tmdb_response.json", "w") as f:
+         json.dump(resp, f, indent=4)
+         print("JSON Path:", (data_dir / "tmdb_response.json").resolve())
+         print("CSV Path:", (data_dir / "tmdb_response.csv").resolve())
+
 
     # CREATE DATAFRAME 
     if resp and "results" in resp:
@@ -59,9 +70,10 @@ if __name__ == "__main__":
         print(df.head())
         print(df.info())
         print(df.describe())
+        print(len(df))
+               
+        df.to_csv(data_dir / "tmdb_response.csv", index=False)
 
-        df.to_csv("tmdb_response.csv", index=False)
-        
-
-    else:
+    else: 
         print(" DataFrame not created (API issue)")
+
